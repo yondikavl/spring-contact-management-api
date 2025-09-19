@@ -1,0 +1,32 @@
+# Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Gradle (kalau kamu pakai gradle, tambahin ini juga)
+/build/
+/.gradle/
+
+# IDE
+*.iml
+.idea/
+.vscode/
+*.class
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env/Config
+*.properties
+*.yml
+*.yaml
+!src/main/resources/application.properties.example
+!src/main/resources/application.yml.example
+
+# Credentials / Keys
+*.pem
+*.key
+*.crt
+*.jks
+*.keystore

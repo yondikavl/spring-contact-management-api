@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-6">
+    <div class="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
+      <h1 class="text-2xl font-bold mb-4">Contact Management</h1>
+
+      <!-- Form Input -->
+      <form id="userForm" class="flex gap-2 mb-4">
+        <input type="hidden" id="userId" />
+        <input
+          type="text"
+          id="name"
+          placeholder="Name"
+          class="border p-2 rounded flex-1"
+        />
+        <input
+          type="email"
+          id="email"
+          placeholder="Email"
+          class="border p-2 rounded flex-1"
+        />
+        <input
+          type="number"
+          id="noTelp"
+          placeholder="No. Telp"
+          class="border p-2 rounded flex-1"
+        />
+        <button
+          type="submit"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          id="cancelEdit"
+          class="hidden bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+        >
+          Cancel
+        </button>
+      </form>
+
+      <!-- Tabel User -->
+      <table class="table-auto w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border px-4 py-2">ID</th>
+            <th class="border px-4 py-2">Name</th>
+            <th class="border px-4 py-2">Email</th>
+            <th class="border px-4 py-2">No. Telp</th>
+            <th class="border px-4 py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+      </table>
+    </div>
+
+    <script>
+      const apiUrl = "/api/users";
+      async function loadUsers() {
+        const res = await fetch(apiUrl);
+        const users = await res.json();
+        const table = document.getElementById("userTable");
+        table.innerHTML = users
+          .map(
+            (u) => `
+                <tr>
+                    <td class="border px-4 py-2">${u.id}</td>
+                    <td class="border px-4 py-2">${u.name}</td>
+                    <td class="border px-4 py-2">${u.email}</td>
+                    <td class="border px-4 py-2">${
+                      u.noTelp ? u.noTelp : "Belum diisi"
+                    }</td>
+                    <td class="border px-4 py-2 flex gap-2">
+                        <button onclick="editUser(${u.id}, '${u.name}', '${
+              u.email
+            }', '${u.noTelp}')"
+                            class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+                            Edit
+                        </button>
+                        <button onclick="deleteUser(${u.id})"
+                            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `
+          )
+          .join("");
+      }
+
+      // add/update user
+      document
+        .getElementById("userForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = document.getElementById("userId").value;
+          const name = document.getElementById("name").value;
+          const email = document.getElementById("email").value;
+          const noTelp = document.getElementById("noTelp").value;
+
+          if (!name || !email || !noTelp) {
+            alert("Semua field wajib diisi!");
+            return;
+          }
+
+          if (id) {
+            // update (PUT)
+            await fetch(`${apiUrl}/${id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id, name, email, noTelp }),
+            });
+          } else {
+            // insert (POST)
+            await fetch(apiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, email, noTelp }),
+            });
+          }
+
+          resetForm();
+          loadUsers();
+        });
+
+      // delete user
+      async function deleteUser(id) {
+        await fetch(`${apiUrl}/${id}`, { method: "DELETE" });
+        loadUsers();
+      }
+
+      // edit user
+      function editUser(id, name, email, noTelp) {
+        document.getElementById("userId").value = id;
+        document.getElementById("name").value = name;
+        document.getElementById("email").value = email;
+        document.getElementById("noTelp").value = noTelp;
+        document.getElementById("cancelEdit").classList.remove("hidden");
+      }
+
+      // cancel edit
+      document
+        .getElementById("cancelEdit")
+        .addEventListener("click", resetForm);
+
+      function resetForm() {
+        document.getElementById("userId").value = "";
+        document.getElementById("name").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("noTelp").value = "";
+        document.getElementById("cancelEdit").classList.add("hidden");
+      }
+
+      loadUsers();
+    </script>
+  </body>
+</html>
